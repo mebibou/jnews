@@ -1,4 +1,4 @@
-package com.conligo.news.feedzilla;
+package com.jnews.feedzilla;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -9,8 +9,8 @@ import java.util.Map;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
-import com.conligo.news.BaseAPI;
-import com.conligo.news.model.ArticleBean;
+import com.jnews.BaseAPI;
+import com.jnews.model.ArticleBean;
 
 /**
  * {@link FeedzillaAPI} class, access to the Feedzilla API.<br>
@@ -25,7 +25,9 @@ public class FeedzillaAPI extends BaseAPI {
 	private final String baseUrl = "http://api.feedzilla.com/v1/";
 	private final String articleUrl = "articles";
 	private final String searchUrl = articleUrl+"/search";
+	
 	private final String jsonFormat = ".json";
+	private final String xmlFormat = ".xml";
 
 	/**
 	 * Default constructor.
@@ -35,10 +37,18 @@ public class FeedzillaAPI extends BaseAPI {
 	}
 	
 	@Override
-	public List<ArticleBean> getLatestArticles() {
+	public Object getLatestArticles(Method method) {
 		try {
-			JSONObject object = this.get(articleUrl+jsonFormat);
-			return this.parseJSONResults(object);
+			if(method.equals(Method.BEAN)) {
+				JSONObject object = this.getForJSON(articleUrl+jsonFormat);
+				return this.parseJSONResults(object);
+			}
+			else if(method.equals(Method.JSON)) {
+				return this.getForJSON(articleUrl+jsonFormat);
+			}
+			else {
+				throw new UnsupportedOperationException("The selected method is not available.");
+			}
 		}
 		catch(UnsupportedEncodingException e) {}
 		return null;
@@ -46,25 +56,24 @@ public class FeedzillaAPI extends BaseAPI {
 
 	@SuppressWarnings("rawtypes")
 	@Override
-	public List<ArticleBean> searchArticles(String query, Map<Enum, String> params) {
+	public Object searchArticles(String query, Map<Enum, String> params, Method method) {
 		try {
 			//add query to the params
 			params = this.addKeyValueToParams(PrivateKeys.QUERY, query, params);
 			
-			JSONObject object = this.get(searchUrl+jsonFormat, params);
-			return this.parseJSONResults(object);
+			if(method.equals(Method.BEAN)) {
+				JSONObject object = this.getForJSON(searchUrl+jsonFormat, params);
+				return this.parseJSONResults(object);
+			}
+			else if(method.equals(Method.JSON)) {
+				return this.getForJSON(searchUrl+jsonFormat, params);
+			}
+			else {
+				throw new UnsupportedOperationException("The selected method is not available.");
+			}
 		}
 		catch(UnsupportedEncodingException e) {}
 		return null;
-	}
-	
-	/**
-	 * Get a list of the latest articles.
-	 * @return {JSONObject} raw format of the request.
-	 * @throws UnsupportedEncodingException
-	 */
-	public JSONObject getJSONLatestArticles() throws UnsupportedEncodingException {
-		return this.get(articleUrl+jsonFormat);
 	}
 
 	/**

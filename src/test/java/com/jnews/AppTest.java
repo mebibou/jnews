@@ -1,4 +1,4 @@
-package com.conligo.news;
+package com.jnews;
 
 import junit.framework.Test;
 import junit.framework.TestCase;

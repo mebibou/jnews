@@ -1,4 +1,4 @@
-package com.conligo.news.usatoday;
+package com.jnews.usatoday;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -9,10 +9,11 @@ import java.util.Map;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
-import com.conligo.news.BaseAPI;
-import com.conligo.news.NewsProperties;
-import com.conligo.news.model.ArticleBean;
-import com.conligo.news.nytimes.NytimesAPI.PrivateKeys;
+import com.jnews.BaseAPI;
+import com.jnews.NewsProperties;
+import com.jnews.BaseAPI.Method;
+import com.jnews.model.ArticleBean;
+import com.jnews.nytimes.NytimesAPI.PrivateKeys;
 
 /**
  * {@link USATodayAPI} class, access to the New York Times API.<br>
@@ -39,14 +40,26 @@ public class USATodayAPI extends BaseAPI {
 		super();
 	}
 
+	@SuppressWarnings("rawtypes")
 	@Override
-	public List<ArticleBean> getLatestArticles() {
+	public Object getLatestArticles(Method method) {
 		try {
 			//add required fields
 			Map<Enum, String> params = this.addRequiredKeyValueToParams(null);
 			
-			JSONObject object = this.get(topnewsUrl, params);
-			return this.parseJSONResults(object);
+			if(method.equals(Method.BEAN)) {
+				JSONObject object = this.getForJSON(topnewsUrl, params);
+				return this.parseJSONResults(object);
+			}
+			else if(method.equals(Method.JSON)) {
+				return this.getForJSON(topnewsUrl, params);
+			}
+			else if(method.equals(Method.XML)) {
+				return this.getForXML(topnewsUrl, params);
+			}
+			else {
+				throw new UnsupportedOperationException("The selected method is not available.");
+			}
 		}
 		catch(UnsupportedEncodingException e) {}
 		return null;
@@ -54,15 +67,26 @@ public class USATodayAPI extends BaseAPI {
 
 	@SuppressWarnings("rawtypes")
 	@Override
-	public List<ArticleBean> searchArticles(String query, Map<Enum, String> params) {
+	public Object searchArticles(String query, Map<Enum, String> params, Method method) {
 		try {
 			//add query to the params
 			params = this.addKeyValueToParams(PrivateKeys.QUERY, query, params);
 			//add required fields
 			params = this.addRequiredKeyValueToParams(params);
 			
-			JSONObject object = this.get(articleUrl, params);
-			return this.parseJSONResults(object);
+			if(method.equals(Method.BEAN)) {
+				JSONObject object = this.getForJSON(articleUrl, params);
+				return this.parseJSONResults(object);
+			}
+			else if(method.equals(Method.JSON)) {
+				return this.getForJSON(articleUrl, params);
+			}
+			else if(method.equals(Method.XML)) {
+				return this.getForXML(articleUrl, params);
+			}
+			else {
+				throw new UnsupportedOperationException("The selected method is not available.");
+			}
 		}
 		catch(UnsupportedEncodingException e) {}
 		return null;

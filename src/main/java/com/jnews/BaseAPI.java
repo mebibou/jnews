@@ -1,4 +1,4 @@
-package com.conligo.news;
+package com.jnews;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -35,25 +35,44 @@ public abstract class BaseAPI {
 	
 	private Client client;
 	
+	public enum Method {
+		JSON("application/json"), 
+		XML("application/xml"), 
+		BEAN("bean");
+
+	    private String name;
+
+	    private Method(String name) {
+	        this.name = name;
+	    }
+
+	    @Override
+	    public String toString() {
+	        return name;
+	    }
+	}
+	
 	public BaseAPI() {
 		this.client = Client.create();
 	}
 	
 	/**
 	 * Get a list of the latest articles.
-	 * @return {List<?>} a list of elements
+	 * @param method {Method} set the return type: either a JSONObject, a string (XML) or a list of beans.
+	 * @return {Object}
 	 */
-	public abstract List<?> getLatestArticles();
+	public abstract Object getLatestArticles(Method method);
 	
 	/**
 	 * Search articles by keywords.
 	 * @param query {String} the query
 	 * @param params {Map<Enum, String>} a map of key/values. The key must be coming from an Enum, the value a string.<br>
 	 * Example: if requesting articles from the NytimesAPI, please use the NytimesAPI.Keys enum, etc.
-	 * @return {List<?>} a list of elements
+	 * @param method {Method} set the return type: either a JSONObject, a string (XML) or a list of beans.
+	 * @return {Object}
 	 */
 	@SuppressWarnings("rawtypes")
-	public abstract List<?> searchArticles(String query, Map<Enum, String> params);
+	public abstract Object searchArticles(String query, Map<Enum, String> params, Method method);
 	
 	/**
 	 * Get request with a list of parameters.
@@ -64,35 +83,45 @@ public abstract class BaseAPI {
 	 * @throws Exception
 	 */
 	@SuppressWarnings("rawtypes")
-	protected JSONObject get(String requestUrl, Map<Enum, String> params) throws UnsupportedEncodingException {
-		String url = "";
-		//add all parameters
-		Iterator<Entry<Enum, String>> iterator = params.entrySet().iterator();
-		while(iterator.hasNext()) {
-			Entry<Enum, String> entry = iterator.next();
-			
-			if(!url.isEmpty()) url += "&";
-			
-			url += this.encodeURL(entry.getKey().toString())+"="+this.encodeURL(entry.getValue());
-		}
-		//now sends request
-		return this.get(requestUrl+url);
+	protected JSONObject getForJSON(String requestUrl, Map<Enum, String> params) throws UnsupportedEncodingException {
+		return this.getForJSON(requestUrl+addAllParamsToStringRequest(params));
+	}
+	
+	@SuppressWarnings("rawtypes")
+	protected String getForXML(String requestUrl, Map<Enum, String> params) throws UnsupportedEncodingException {
+		return this.getForXML(requestUrl+addAllParamsToStringRequest(params));
 	}
 	
 	/**
 	 * Get request to the provided url.
 	 * @param url
-	 * @return
+	 * @return {JSONObject} response in a JSON format.
 	 * @throws UnsupportedEncodingException
 	 */
-	protected JSONObject get(String url) throws UnsupportedEncodingException {
-		logger.debug("GET: "+this.getBaseUrl()+url);
+	protected JSONObject getForJSON(String url) throws UnsupportedEncodingException {
+		logger.debug("Accessing url: "+this.getBaseUrl()+url);
 		WebResource resource = client.resource(this.getBaseUrl()+url);
 		long start = System.currentTimeMillis();
-		ClientResponse clientResponse =  resource.accept("application/json").get(ClientResponse.class);
+		ClientResponse clientResponse =  resource.accept(Method.JSON.toString()).get(ClientResponse.class);
 		String response = clientResponse.getEntity(String.class);
 		logger.debug("TIME USED: "+(System.currentTimeMillis()-start)+" ms, RESPONSE: "+response);
 		return JSONObject.fromObject(response);
+	}
+	
+	/**
+	 * Get request to the provided url.
+	 * @param url
+	 * @return {String} response in an xml format.
+	 * @throws UnsupportedEncodingException
+	 */
+	protected String getForXML(String url) throws UnsupportedEncodingException {
+		logger.debug("Accessing url: "+this.getBaseUrl()+url);
+		WebResource resource = client.resource(this.getBaseUrl()+url);
+		long start = System.currentTimeMillis();
+		ClientResponse clientResponse =  resource.accept(Method.XML.toString()).get(ClientResponse.class);
+		String response = clientResponse.getEntity(String.class);
+		logger.debug("TIME USED: "+(System.currentTimeMillis()-start)+" ms, RESPONSE: "+response);
+		return response;
 	}
 	
 	/**
@@ -158,5 +187,25 @@ public abstract class BaseAPI {
 	 * @return
 	 */
 	protected abstract String getBaseUrl();
+	
+	/**
+	 * Add all parameters to form a request.
+	 * @param params
+	 * @return
+	 * @throws UnsupportedEncodingException
+	 */
+	private String addAllParamsToStringRequest(Map<Enum, String> params) throws UnsupportedEncodingException {
+		String url = "";
+		//add all parameters
+		Iterator<Entry<Enum, String>> iterator = params.entrySet().iterator();
+		while(iterator.hasNext()) {
+			Entry<Enum, String> entry = iterator.next();
+			
+			if(!url.isEmpty()) url += "&";
+			
+			url += this.encodeURL(entry.getKey().toString())+"="+this.encodeURL(entry.getValue());
+		}
+		return url;
+	}
 
 }

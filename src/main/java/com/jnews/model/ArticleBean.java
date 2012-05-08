@@ -1,10 +1,10 @@
-package com.conligo.news.model;
+package com.jnews.model;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
- * {@link ArticleBean} class, TODO kesako?
+ * {@link ArticleBean} class, bean that defines the fields of an Article.
  * 
  * @author Guillaume Royer
  *

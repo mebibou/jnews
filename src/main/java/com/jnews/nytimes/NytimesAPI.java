@@ -1,4 +1,4 @@
-package com.conligo.news.nytimes;
+package com.jnews.nytimes;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -9,9 +9,9 @@ import java.util.Map;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
-import com.conligo.news.BaseAPI;
-import com.conligo.news.NewsProperties;
-import com.conligo.news.model.ArticleBean;
+import com.jnews.BaseAPI;
+import com.jnews.NewsProperties;
+import com.jnews.model.ArticleBean;
 
 /**
  * {@link NytimesAPI} class, access to the New York Times API.<br>
@@ -39,23 +39,33 @@ public class NytimesAPI extends BaseAPI {
 		super();
 	}
 
-	@Deprecated
 	@Override
-	public List<ArticleBean> getLatestArticles() {
+	public Object getLatestArticles(Method method) {
 		throw new UnsupportedOperationException();
 	}
 
 	@SuppressWarnings("rawtypes")
 	@Override
-	public List<ArticleBean> searchArticles(String query, Map<Enum, String> params) {
+	public Object searchArticles(String query, Map<Enum, String> params, Method method) {
 		try {
 			//add query to the params
 			params = this.addKeyValueToParams(PrivateKeys.QUERY, query, params);
 			//add required fields
 			params = this.addRequiredKeyValueToParams(params);
 			
-			JSONObject object = this.get(searchUrl, params);
-			return this.parseJSONResults(object);
+			if(method.equals(Method.BEAN)) {
+				JSONObject object = this.getForJSON(searchUrl, params);
+				return this.parseJSONResults(object);
+			}
+			else if(method.equals(Method.JSON)) {
+				return this.getForJSON(searchUrl, params);
+			}
+			else if(method.equals(Method.XML)) {
+				return this.getForXML(searchUrl, params);
+			}
+			else {
+				throw new UnsupportedOperationException("The selected method is not available.");
+			}
 		}
 		catch(UnsupportedEncodingException e) {}
 		return null;
