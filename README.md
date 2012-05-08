@@ -7,10 +7,10 @@ The goal is to have only one library that will help access all the APIs that exi
 
 ##How to use it
 
-  cd into the jnews folder
-  mvn install
-  cd target
-  #you can find the latest jnews.jar file here
+	cd into the jnews folder
+	mvn install
+	cd target
+	#you can find the latest jnews.jar file here
 
 ##Licensing
 jnews is licensed under the Apache 2.0 license, see the LICENSE file for more details
