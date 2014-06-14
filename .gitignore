@@ -1,2 +1,4 @@
 target/
 log/
+bin/
+*.DS_Store
