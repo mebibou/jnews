@@ -1,5 +1,7 @@
 # jnews - A java library for news APIs
 
+[![Build Status](https://travis-ci.org/mebibou/jnews.png)](https://travis-ci.org/mebibou/jnews)
+
 ##Intro
 jnews is meant to be used as a Java Library to help access the news APIs online, such as Feedzilla, the New York Times, USA today, etc.
 
